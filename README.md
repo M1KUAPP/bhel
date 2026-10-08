@@ -6,8 +6,8 @@
 <div align="center">
   <a href="https://github.com/M1KUAPP/bhel">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="docs/readme/banner-dark.png">
-      <img src="docs/readme/banner-light.png" alt="bhel banner">
+      <source media="(prefers-color-scheme: dark)" srcset="/docs/readme/banner-dark.png">
+      <img src="/docs/readme/banner-light.png" alt="bhel banner">
     </picture>
   </a>
 
@@ -91,36 +91,36 @@ Built as coursework, where it earned an A+.
 <table>
   <tr>
     <td width="50%" valign="top" align="left">
-      <img src="docs/readme/screenshots/landing.png" alt="bhel landing page" width="100%">
+      <img src="/docs/readme/screenshots/landing.png" alt="bhel landing page" width="100%">
       <br />
       <strong>Landing Page</strong> · The entry point, with links to sign in or open the dashboard.
     </td>
     <td width="50%" valign="top" align="left">
-      <img src="docs/readme/screenshots/leave-balance.png" alt="Leave balances" width="100%">
+      <img src="/docs/readme/screenshots/leave-balance.png" alt="Leave balances" width="100%">
       <br />
       <strong>Leave Balances</strong> · Allowance, used and remaining days for each leave type, plus pending applications.
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top" align="left">
-      <img src="docs/readme/screenshots/approvals.png" alt="Leave approvals queue" width="100%">
+      <img src="/docs/readme/screenshots/approvals.png" alt="Leave approvals queue" width="100%">
       <br />
       <strong>Leave Approvals</strong> · Every pending application in one queue, with a department filter.
     </td>
     <td width="50%" valign="top" align="left">
-      <img src="docs/readme/screenshots/employees.png" alt="Employee directory" width="100%">
+      <img src="/docs/readme/screenshots/employees.png" alt="Employee directory" width="100%">
       <br />
       <strong>Employees</strong> · Search the directory by name, email or IC/passport, and filter by department and status.
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top" align="left">
-      <img src="docs/readme/screenshots/leave-history.png" alt="Leave history" width="100%">
+      <img src="/docs/readme/screenshots/leave-history.png" alt="Leave history" width="100%">
       <br />
       <strong>Leave History</strong> · An employee's applications for a year, filtered by status.
     </td>
     <td width="50%" valign="top" align="left">
-      <img src="docs/readme/screenshots/department-report.png" alt="Department report preview" width="100%">
+      <img src="/docs/readme/screenshots/department-report.png" alt="Department report preview" width="100%">
       <br />
       <strong>Department Report</strong> · A yearly department summary rendered as a PDF and previewed in the browser.
     </td>
@@ -133,35 +133,35 @@ Built as coursework, where it earned an A+.
 
 1.  **Sign in.** `/login` takes a username and password, and the gateway returns a JWT that carries the user's role: `EMPLOYEE`, `HR` or `ADMIN`. A fresh database has one login per role: `employee`, `hr` and `admin`, each with its username as the password.
 
-    <img src="docs/readme/steps/1-sign-in.png" alt="Sign-in page" width="100%">
+    <img src="/docs/readme/steps/1-sign-in.png" alt="Sign-in page" width="100%">
 
 2.  **Start from the dashboard.** `/dashboard` shows the remaining leave days, pending applications and upcoming leave, with quick actions and recent activity. The sidebar lists only the pages the role can open.
 
-    <img src="docs/readme/steps/2-dashboard.png" alt="Employee dashboard" width="100%">
+    <img src="/docs/readme/steps/2-dashboard.png" alt="Employee dashboard" width="100%">
 
 3.  **Apply for leave.** On `/dashboard/leaves/apply`, the employee picks a leave type and dates. The form counts working days, skipping weekends, and blocks the request when it exceeds the remaining balance. The RMI server repeats those checks and also rejects requests that span two years or overlap pending or approved leave.
 
-    <img src="docs/readme/steps/3-apply.png" alt="Leave application form" width="100%">
+    <img src="/docs/readme/steps/3-apply.png" alt="Leave application form" width="100%">
 
 4.  **Review the application.** HR and admins open `/dashboard/approvals`, the queue of pending applications. Each review shows the dates, duration and reason, then approves the request or rejects it with a required comment.
 
-    <img src="docs/readme/steps/4-review.png" alt="Review dialog for a leave application" width="100%">
+    <img src="/docs/readme/steps/4-review.png" alt="Review dialog for a leave application" width="100%">
 
 5.  **Track the decision.** The application's page shows its timeline, the approver and their comment. An approval moves the days from remaining to used. While an application is still pending, the employee can cancel it.
 
-    <img src="docs/readme/steps/5-track.png" alt="Approved leave application" width="100%">
+    <img src="/docs/readme/steps/5-track.png" alt="Approved leave application" width="100%">
 
 6.  **Register employees.** HR adds staff at `/dashboard/employees/new`. Registration also creates the employee's login, with the IC/passport number as both username and first password. The department sets the role: Admin gives `admin`, Human Resources gives `hr`, and every other department gives `employee`.
 
-    <img src="docs/readme/steps/6-register.png" alt="Employee registration form" width="100%">
+    <img src="/docs/readme/steps/6-register.png" alt="Employee registration form" width="100%">
 
 7.  **Keep profiles current.** At `/dashboard/profile/edit`, employees update their email, phone number and family members (spouse, child, parent, sibling or other). The other fields stay locked for HR to edit.
 
-    <img src="docs/readme/steps/7-family.png" alt="Family details form" width="100%">
+    <img src="/docs/readme/steps/7-family.png" alt="Family details form" width="100%">
 
 8.  **Generate reports.** `/dashboard/reports` builds yearly reports for one employee, one department or the whole organization. The RMI server renders each one as a PDF with iText. The browser previews it, then downloads it as a PDF or a PNG.
 
-    <img src="docs/readme/steps/8-reports.png" alt="Employee report preview" width="100%">
+    <img src="/docs/readme/steps/8-reports.png" alt="Employee report preview" width="100%">
 
 <p align="right"><a href="#readme-top">&uarr;</a></p>
 
@@ -185,19 +185,11 @@ Built as coursework, where it earned an A+.
 ### Architecture
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/architecture-dark.svg">
-  <img src="docs/readme/architecture-light.svg" alt="bhel architecture">
+  <source media="(prefers-color-scheme: dark)" srcset="/docs/readme/architecture-dark.svg">
+  <img src="/docs/readme/architecture-light.svg" alt="bhel architecture">
 </picture>
 
-The diagram is drawn with [archify](https://github.com/tt-a1i/archify) from [`architecture.json`](docs/readme/architecture.json) and exported by [`export-architecture.mjs`](docs/readme/export-architecture.mjs).
-
-The three Java processes run from the same jar, `apps/api/target/hrms-1.0-SNAPSHOT.jar`:
-
-| Entry point                                   | Role                                                                             |
-| --------------------------------------------- | -------------------------------------------------------------------------------- |
-| `hrms.bhel.client.ClientApplication`          | REST gateway on port 8080, and the jar's default main class                      |
-| `hrms.bhel.server.RMIServerMain`              | RMI registry and the four remote services on port 1099                           |
-| `hrms.bhel.server.config.DatabaseInitializer` | Drops and recreates the tables, then seeds leave types and the three demo logins |
+Made with [Archify](https://github.com/tt-a1i/archify) from [`architecture.json`](/docs/readme/architecture.json).
 
 <p align="right"><a href="#readme-top">&uarr;</a></p>
 
@@ -293,7 +285,7 @@ See [open issues](https://github.com/M1KUAPP/bhel/issues) for a full list of pro
 ## Team
 
 <a href="https://github.com/M1KUAPP/bhel/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=M1KUAPP/bhel" alt="Team" />
+  <img src="https://contrib.rocks/image?repo=M1KUAPP/bhel" alt="bhel team" />
 </a>
 
 Made with [contrib.rocks](https://contrib.rocks).
@@ -304,7 +296,7 @@ Made with [contrib.rocks](https://contrib.rocks).
 
 ## License
 
-See [LICENSE](LICENSE) for more information.
+See [LICENSE](/LICENSE) for more information.
 
 <p align="right"><a href="#readme-top">&uarr;</a></p>
 
@@ -315,9 +307,9 @@ See [LICENSE](LICENSE) for more information.
 - [iText](https://itextpdf.com/) — PDF report generation.
 - [react-pdf](https://github.com/wojtekmaj/react-pdf) — in-browser PDF preview.
 - [Lucide](https://lucide.dev) — icons.
-- [archify](https://github.com/tt-a1i/archify) — architecture diagrams.
-- [Shields.io](https://shields.io)
+- [Archify](https://github.com/tt-a1i/archify)
 - [contrib.rocks](https://contrib.rocks)
+- [Shields.io](https://shields.io)
 
 <p align="right"><a href="#readme-top">&uarr;</a></p>
 
