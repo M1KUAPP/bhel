@@ -28,7 +28,7 @@ Run these from the repository root unless noted. The Java processes read only en
 - `bun run check`: Prettier, the web app's ESLint (no warnings allowed), its typecheck and build, then `mvn package` for the API when `mvn` is on `PATH`.
 - `bun run lint`: Prettier's check. `bun run lint:fix` runs Prettier's write.
 - `bun run dev`, `bun run build`, `bun run lint` and `bun run typecheck`, in `apps/web/`: the Next.js dev server on `http://localhost:3000`, the production build, ESLint and `tsc --noEmit`.
-- `mvn -q -B -f apps/api/pom.xml package`: builds `apps/api/target/hrms-1.0-SNAPSHOT.jar`.
+- `mvn -q -B -f apps/api/pom.xml package`: runs the API tests in `apps/api/src/test/` (MockMvc against mocked RMI services), then builds `apps/api/target/hrms-1.0-SNAPSHOT.jar`.
 - `java -cp apps/api/target/hrms-1.0-SNAPSHOT.jar -Dloader.main=<class> org.springframework.boot.loader.launch.PropertiesLauncher`: runs `hrms.bhel.server.config.DatabaseInitializer` or `hrms.bhel.server.RMIServerMain`. `java -jar apps/api/target/hrms-1.0-SNAPSHOT.jar` runs the gateway. Start the RMI server before the gateway.
 
 `DatabaseInitializer` drops and recreates every table in the database `DATABASE_URL` points at, then seeds three local logins: `admin`/`admin`, `hr`/`hr` and `employee`/`employee`.

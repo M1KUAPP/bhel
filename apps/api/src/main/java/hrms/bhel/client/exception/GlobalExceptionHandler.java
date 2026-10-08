@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -82,6 +83,21 @@ public class GlobalExceptionHandler {
       request.getRequestURI()
     );
     return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+  }
+
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+    AccessDeniedException ex,
+    HttpServletRequest request
+  ) {
+    logger.warn("Access denied: {} at {}", ex.getMessage(), request.getRequestURI());
+    ErrorResponse error = new ErrorResponse(
+      HttpStatus.FORBIDDEN.value(),
+      "Access Denied",
+      ex.getMessage(),
+      request.getRequestURI()
+    );
+    return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
   }
 
   @ExceptionHandler(DuplicateResourceException.class)
