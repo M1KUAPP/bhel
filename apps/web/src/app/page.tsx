@@ -207,20 +207,22 @@ export default function Home() {
 
             <section id="leave" className="scroll-mt-20 px-6 pt-16 pb-24 md:pt-24 md:pb-32">
               <div className="mx-auto max-w-6xl">
-                <SectionHeading
-                  eyebrow="Leave balances"
-                  title={
-                    <>
-                      Five kinds of leave, <Accent>counted to the day.</Accent>
-                    </>
-                  }
-                >
-                  Each type has a yearly allowance. Employees see what&apos;s left, what&apos;s used and what&apos;s
-                  still pending.
-                </SectionHeading>
-                <Reveal delay={120} className="mt-14">
-                  <BalanceMeters />
-                </Reveal>
+                <div className="grid gap-14 lg:grid-cols-[0.85fr_1.15fr] lg:items-center lg:gap-12">
+                  <SectionHeading
+                    eyebrow="Leave balances"
+                    title={
+                      <>
+                        Five kinds of leave, <Accent>counted to the day.</Accent>
+                      </>
+                    }
+                  >
+                    Each type has a yearly allowance. Employees see what&apos;s left, what&apos;s used and what&apos;s
+                    still pending.
+                  </SectionHeading>
+                  <Reveal delay={120}>
+                    <BalanceMeters />
+                  </Reveal>
+                </div>
 
                 <div className="mt-28 grid gap-12 lg:mt-36">
                   <SectionHeading

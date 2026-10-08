@@ -5,7 +5,7 @@
  *
  * An example leave application on frosted glass. It loops from Pending to
  * Approved: the timeline fills, the balance drops from 14 to 11 days and
- * HR's comment arrives. It holds still while paused and shows the approved
+ * HR's comment replaces the waiting note. It holds still while paused and shows the approved
  * end state when the user prefers reduced motion.
  */
 import { CalendarDays, CircleCheck, Clock } from 'lucide-react'
@@ -115,17 +115,38 @@ export default function LeaveCardDemo() {
           </span>
         </div>
 
-        <div className="mt-4 h-12">
+        <div className="mt-4 grid">
           <AnimatePresence initial={false}>
-            {approved && (
+            {approved ? (
               <motion.p
+                key="comment"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5, ease: EASE, delay: 0.25 }}
-                className="rounded-2xl rounded-tl-md bg-white px-4 py-3 text-sm text-[#04102a]"
+                className="[grid-area:1/1] rounded-2xl rounded-tl-md bg-white px-4 py-3 text-sm text-[#04102a]"
               >
                 “Approved. Enjoy the break.” <span className="text-[#04102a]/60">· HR</span>
+              </motion.p>
+            ) : (
+              <motion.p
+                key="waiting"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4, ease: EASE }}
+                className="flex items-center gap-2 [grid-area:1/1] rounded-2xl rounded-tl-md bg-white/10 px-4 py-3 text-sm text-white/75"
+              >
+                Waiting for HR to review
+                <span className="flex gap-1">
+                  {[0, 1, 2].map((dot) => (
+                    <span
+                      key={dot}
+                      className="landing-typing landing-loop h-1 w-1 rounded-full bg-white/70"
+                      style={{ animationDelay: `${dot * 160}ms` }}
+                    />
+                  ))}
+                </span>
               </motion.p>
             )}
           </AnimatePresence>

@@ -100,6 +100,17 @@ body {
   }
 }
 
+@keyframes landing-typing {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
 @keyframes service-pulse {
   0%,
   30%,
@@ -133,6 +144,10 @@ body {
 
 .service-chip {
   animation: service-pulse 4.8s ease-in-out infinite;
+}
+
+.landing-typing {
+  animation: landing-typing 1.2s ease-in-out infinite;
 }
 
 .flow-link {

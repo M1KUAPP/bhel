@@ -50,7 +50,10 @@ function Meter({ type, days, index }: { type: string; days: number; index: numbe
   return (
     <li
       ref={cardRef}
-      className="group relative flex flex-col items-center rounded-[28px] border border-gray-200/80 bg-white px-4 pt-7 pb-6 transition-transform duration-500 ease-out hover:-translate-y-1"
+      className={`group relative flex flex-col items-center rounded-[28px] border border-gray-200/80 bg-white px-4 pt-7 pb-6 transition-transform duration-500 ease-out hover:-translate-y-1 lg:col-span-2 ${
+        // Centres the second row of two under the first row of three.
+        index === 3 ? 'lg:col-start-2' : ''
+      }`}
     >
       <div className="relative h-28 w-28">
         <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90" aria-hidden="true">
@@ -96,7 +99,7 @@ function Meter({ type, days, index }: { type: string; days: number; index: numbe
  */
 export default function BalanceMeters() {
   return (
-    <ul aria-label="Yearly leave allowances" className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+    <ul aria-label="Yearly leave allowances" className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
       {ALLOWANCES.map(({ type, days }, index) => (
         <Meter key={type} type={type} days={days} index={index} />
       ))}
