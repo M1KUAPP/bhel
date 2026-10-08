@@ -53,6 +53,8 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
             Try Again
           </button>
           <button
+            // A full page load discards the client state that raised the error.
+            // eslint-disable-next-line @next/next/no-location-assign-relative-destination
             onClick={() => (window.location.href = '/dashboard')}
             className="w-full inline-flex items-center justify-center px-4 py-2.5 border border-gray-200 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors"
           >

@@ -27,8 +27,8 @@ import { FormTextarea } from '@/components/ui/FormInput'
 import { LeaveBalance } from '@/lib/api/types'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Calendar } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useState } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 
 /**
@@ -114,14 +114,12 @@ function calculateWorkingDays(start: Date, end: Date): number {
  * @returns Leave application form with date picker and validation
  */
 export default function LeaveApplicationForm({ leaveBalances, onSubmit, onCancel }: LeaveApplicationFormProps) {
-  const [totalDays, setTotalDays] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [balanceError, setBalanceError] = useState<string | null>(null)
 
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors }
   } = useForm<LeaveApplicationFormData>({
     resolver: zodResolver(leaveApplicationSchema),
@@ -133,37 +131,21 @@ export default function LeaveApplicationForm({ leaveBalances, onSubmit, onCancel
     }
   })
 
-  const watchedLeaveType = watch('leaveType')
-  const watchedStartDate = watch('startDate')
-  const watchedEndDate = watch('endDate')
+  const [watchedLeaveType, watchedStartDate, watchedEndDate] = useWatch({
+    control,
+    name: ['leaveType', 'startDate', 'endDate']
+  })
 
-  useEffect(() => {
-    if (watchedStartDate && watchedEndDate) {
-      const start = new Date(watchedStartDate)
-      const end = new Date(watchedEndDate)
-      if (end >= start) {
-        const days = calculateWorkingDays(start, end)
-        setTotalDays(days)
-      } else {
-        setTotalDays(0)
-      }
-    } else {
-      setTotalDays(0)
-    }
-  }, [watchedStartDate, watchedEndDate])
+  const totalDays =
+    watchedStartDate && watchedEndDate && new Date(watchedEndDate) >= new Date(watchedStartDate)
+      ? calculateWorkingDays(new Date(watchedStartDate), new Date(watchedEndDate))
+      : 0
 
-  useEffect(() => {
-    if (watchedLeaveType && totalDays > 0) {
-      const selectedBalance = leaveBalances.find((b) => b.leaveTypeName === watchedLeaveType)
-      if (selectedBalance && totalDays > selectedBalance.remainingDays) {
-        setBalanceError(`Insufficient balance. You have ${selectedBalance.remainingDays} days remaining.`)
-      } else {
-        setBalanceError(null)
-      }
-    } else {
-      setBalanceError(null)
-    }
-  }, [watchedLeaveType, totalDays, leaveBalances])
+  const selectedBalance = leaveBalances.find((b) => b.leaveTypeName === watchedLeaveType)
+  const balanceError =
+    watchedLeaveType && totalDays > 0 && selectedBalance && totalDays > selectedBalance.remainingDays
+      ? `Insufficient balance. You have ${selectedBalance.remainingDays} days remaining.`
+      : null
 
   const onFormSubmit = async (data: LeaveApplicationFormData) => {
     if (balanceError) return
@@ -182,7 +164,6 @@ export default function LeaveApplicationForm({ leaveBalances, onSubmit, onCancel
     }
   }
 
-  const selectedBalance = leaveBalances.find((b) => b.leaveTypeName === watchedLeaveType)
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6" noValidate>

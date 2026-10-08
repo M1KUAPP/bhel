@@ -42,6 +42,9 @@ const familyDetailsSchema = z.object({
   familyMembers: z.array(familyMemberSchema)
 })
 
+/** Form values before validation (relationship may still be empty) */
+type FamilyDetailsFormInput = z.input<typeof familyDetailsSchema>
+
 /** Form data type inferred from schema */
 type FamilyDetailsFormData = z.infer<typeof familyDetailsSchema>
 
@@ -81,7 +84,7 @@ export default function FamilyDetailsForm({
     control,
     handleSubmit,
     formState: { errors }
-  } = useForm<FamilyDetailsFormData>({
+  } = useForm<FamilyDetailsFormInput, unknown, FamilyDetailsFormData>({
     resolver: zodResolver(familyDetailsSchema),
     defaultValues: {
       familyMembers:

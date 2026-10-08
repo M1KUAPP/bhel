@@ -131,18 +131,6 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.13.0</version>
       </plugin>
-      <!-- JAR plugin - configures main class for standalone execution -->
-      <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.4.2</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>hrms.bhel.client.ClientApplication</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
 </project>

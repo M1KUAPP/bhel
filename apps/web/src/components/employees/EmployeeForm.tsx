@@ -25,7 +25,7 @@ import { Employee } from '@/lib/api/types'
 import { EMAIL_DOMAIN } from '@/lib/config'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 
 /** Zod schema for employee registration (no status field) */
@@ -89,7 +89,7 @@ export default function EmployeeForm({
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     formState: { errors }
   } = useForm<EditFormData | RegistrationFormData>({
@@ -108,8 +108,7 @@ export default function EmployeeForm({
         }
       : undefined
   })
-  const firstName = watch('firstName')
-  const lastName = watch('lastName')
+  const [firstName, lastName] = useWatch({ control, name: ['firstName', 'lastName'] })
   useEffect(() => {
     if (!employee && firstName && lastName) {
       const autoEmail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${EMAIL_DOMAIN}`
