@@ -3,8 +3,8 @@
 /**
  * Shader Background Component
  *
- * A full-bleed WebGL canvas that renders a domain-warped noise gradient
- * ("mesh drift"), optionally as a halftone dot grid. The wrapper's CSS
+ * A full-bleed WebGL canvas that renders komorebi: round spots of sunlight
+ * falling through swaying leaves onto a shaded wall. The wrapper's CSS
  * gradient shows until WebGL draws, and stays when WebGL is unavailable.
  *
  * The context is created when the section nears the viewport and the main
@@ -18,11 +18,9 @@ import { useEffect, useRef } from 'react'
 export type ShaderColor = readonly [number, number, number]
 
 interface ShaderBackgroundProps {
-  /** Base, mid, highlight and glint colors. */
+  /** Shade, mid shade, light and highlight colors. */
   colors: readonly [ShaderColor, ShaderColor, ShaderColor, ShaderColor]
-  /** Render as a halftone dot grid instead of a smooth gradient. */
-  dots?: boolean
-  /** Offsets the noise field so two instances don't look alike. */
+  /** Offsets the canopy so two instances don't look alike. */
   seed?: number
   className?: string
 }
@@ -39,70 +37,112 @@ precision highp float;
 
 uniform vec2 u_resolution;
 uniform float u_time;
-uniform float u_scale;
 uniform vec2 u_pointer;
 uniform vec3 u_colors[4];
-uniform float u_dots;
 uniform float u_seed;
 
-float hash(vec2 p) {
-  p = fract(p * vec2(123.34, 456.21));
-  p += dot(p, p + 45.32);
-  return fract(p.x * p.y);
+vec2 hash2(vec2 p) {
+  p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
+  return fract(sin(p) * 43758.5453);
 }
 
 float noise(vec2 p) {
   vec2 i = floor(p);
   vec2 f = fract(p);
   vec2 u = f * f * (3.0 - 2.0 * f);
-  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+  return mix(mix(hash2(i).x, hash2(i + vec2(1.0, 0.0)).x, u.x), mix(hash2(i + vec2(0.0, 1.0)).x, hash2(i + vec2(1.0, 1.0)).x, u.x), u.y);
 }
 
-float fbm(vec2 p) {
-  float value = 0.0;
-  float amplitude = 0.5;
-  mat2 rotate = mat2(1.6, 1.2, -1.2, 1.6);
-  for (int i = 0; i < 5; i++) {
-    value += amplitude * noise(p);
-    p = rotate * p;
-    amplitude *= 0.5;
+mat2 rotate(float angle) {
+  float c = cos(angle);
+  float s = sin(angle);
+  return mat2(c, -s, s, c);
+}
+
+// Coverage of one leaf in its own frame: x runs along the leaf, which tapers to a point at both ends.
+float leaf(vec2 p, float blur) {
+  float x = clamp(p.x, -1.0, 1.0);
+  float halfWidth = 0.42 * (1.0 - x * x) * (1.0 + 0.3 * x);
+  float d = max(abs(p.y) - halfWidth, (abs(p.x) - 1.0) * 0.5);
+  return 1.0 - smoothstep(-blur, blur, d);
+}
+
+// One layer of leaves on a jittered grid. Every leaf flutters about its own stem.
+float canopy(vec2 p, float t, float seed, float blur) {
+  vec2 cell = floor(p);
+  vec2 local = fract(p);
+  float cover = 0.0;
+  for (int j = -1; j <= 1; j++) {
+    for (int i = -1; i <= 1; i++) {
+      vec2 offset = vec2(float(i), float(j));
+      vec2 h = hash2(cell + offset + seed);
+      vec2 center = offset + 0.5 + (h - 0.5) * 0.6;
+      float angle = h.x * 6.2831 + 0.22 * sin(t * (0.6 + 0.5 * h.y) + h.x * 12.0);
+      float size = 0.48 + 0.24 * h.y;
+      vec2 q = rotate(angle) * (local - center) / size;
+      cover = max(cover, leaf(q, blur / size));
+    }
   }
-  return value;
+  return cover;
+}
+
+// Round spots of sun on a jittered grid: each gap in the canopy projects a soft image of the sun.
+// Spots drift as the branches sway, flicker as leaves pass and fade as gaps open and close.
+float dapples(vec2 p, float t, float seed, float softness) {
+  vec2 cell = floor(p);
+  vec2 local = fract(p);
+  float light = 0.0;
+  for (int j = -1; j <= 1; j++) {
+    for (int i = -1; i <= 1; i++) {
+      vec2 offset = vec2(float(i), float(j));
+      vec2 id = cell + offset;
+      vec2 h = hash2(id + seed);
+      vec2 k = hash2(id + seed + 19.0);
+      vec2 sway = 0.1 * vec2(sin(t * (0.45 + 0.5 * k.x) + h.y * 6.2831), cos(t * (0.35 + 0.5 * k.y) + h.x * 6.2831));
+      vec2 d = local - (offset + 0.5 + (h - 0.5) * 0.7 + sway);
+      d.x *= 0.82;
+      float radius = 0.14 + 0.2 * k.x;
+      float spot = 1.0 - smoothstep(radius - softness, radius + softness, length(d));
+      float open = smoothstep(0.22, 0.6, noise(id * 0.41 + seed + vec2(t * 0.06, 0.0)));
+      float flicker = 0.62 + 0.38 * sin(t * (0.7 + 1.3 * k.y) + h.x * 20.0);
+      light += spot * open * flicker;
+    }
+  }
+  return min(light, 1.0);
 }
 
 void main() {
-  vec2 p = (gl_FragCoord.xy - 0.5 * u_resolution) / min(u_resolution.x, u_resolution.y) * 1.4;
-  p += u_pointer * 0.12;
-  float t = u_time * 0.05 + u_seed;
+  vec2 uv = gl_FragCoord.xy / u_resolution;
+  vec2 p = (gl_FragCoord.xy - 0.5 * u_resolution) / min(u_resolution.x, u_resolution.y);
+  float t = u_time + u_seed * 7.0;
 
-  vec2 q = vec2(fbm(p + vec2(0.0, t)), fbm(p + vec2(5.2, 1.3) - t));
-  vec2 r = vec2(fbm(p + 2.8 * q + vec2(1.7, 9.2) + 0.6 * t), fbm(p + 2.8 * q + vec2(8.3, 2.8) - 0.5 * t));
-  float f = fbm(p + 2.2 * r);
+  // A slow breeze with gusts; the near leaves move furthest.
+  float gust = noise(vec2(t * 0.12, u_seed)) - 0.5;
+  vec2 wind = vec2(0.05 * sin(t * 0.31) + 0.14 * gust, 0.035 * cos(t * 0.23));
+  vec2 c = rotate(0.42) * p;
 
-  vec3 color = mix(u_colors[0], u_colors[1], smoothstep(0.1, 0.6, f));
-  color = mix(color, u_colors[2], smoothstep(0.4, 0.85, length(q)));
-  color = mix(color, u_colors[3], smoothstep(0.55, 0.85, r.y) * 0.85);
-  // A soft light drifting on the right, away from the text column.
-  vec2 light = vec2(0.55 + 0.12 * sin(t * 2.0), 0.2 + 0.1 * cos(t * 1.6));
-  color += mix(u_colors[2], u_colors[3], 0.5) * exp(-2.2 * length(p - light)) * 0.45 * (0.6 + 0.8 * f);
-  // Thin bright folds along the warped field, like light on silk.
-  color += u_colors[3] * pow(0.5 + 0.5 * sin(f * 14.0 - t * 6.0), 12.0) * 0.18;
+  float wash = smoothstep(0.3, 0.95, noise(c * 1.3 + wind + vec2(t * 0.03, 17.0 + u_seed)));
+  float large = dapples(c * 2.3 + wind * 1.4 + u_pointer * 0.05, t, 3.0 + u_seed, 0.16);
+  float small = dapples(c * 4.6 + wind * 0.9 + u_pointer * 0.03, t * 1.2, 11.0 + u_seed, 0.06);
+  float leaves = canopy(c * 1.8 + wind * 2.4 + u_pointer * 0.12 + 5.0, t, 29.0 + u_seed, 0.1);
 
-  if (u_dots > 0.5) {
-    vec2 cell = fract(gl_FragCoord.xy / (9.0 * u_scale)) - 0.5;
-    float luminance = dot(color, vec3(0.299, 0.587, 0.114));
-    float radius = 0.06 + 0.4 * smoothstep(0.08, 0.55, luminance);
-    float dotMask = 1.0 - smoothstep(radius - 0.1, radius, length(cell));
-    color = mix(u_colors[0], color * 1.2, dotMask);
-  }
+  // The sun sits off the top right, away from the text column.
+  float sun = smoothstep(1.85, 0.0, length(p - vec2(0.58, 0.3)));
+  float light = (0.2 * wash + 1.15 * large + 0.75 * small) * (1.0 - 0.85 * leaves) * (0.14 + 1.35 * sun);
 
-  color += (hash(gl_FragCoord.xy + fract(u_time) * 97.0) - 0.5) * 0.035;
+  vec3 color = mix(u_colors[0], u_colors[1], 0.55 * sun + 0.2 * uv.y);
+  // Leaves in the shade read as darker silhouettes.
+  color = mix(color, u_colors[0] * 0.7, leaves * 0.45);
+  color = mix(color, u_colors[2], smoothstep(0.03, 0.5, light) * 0.9);
+  color = mix(color, u_colors[3], smoothstep(0.38, 0.95, light));
+  // Light scatters a little around each spot.
+  color += u_colors[2] * smoothstep(0.0, 0.6, light) * 0.1 + u_colors[3] * pow(clamp(light, 0.0, 1.0), 4.0) * 0.16;
   gl_FragColor = vec4(color, 1.0);
 }
 `
 
-/** Device pixels per CSS pixel, capped to keep the noise passes cheap on high-DPI screens. */
-const MAX_PIXEL_RATIO = 1.5
+/** Device pixels per CSS pixel. The light is soft, so one pass per CSS pixel keeps the leaf loops cheap. */
+const MAX_PIXEL_RATIO = 1
 
 /** Minimum milliseconds between frames on touch devices (about 30 fps). */
 const COARSE_FRAME_INTERVAL = 33
@@ -135,10 +175,10 @@ function prefersLightweight(): boolean {
 /**
  * Animated WebGL background that fills its positioned parent.
  *
- * @param props - Palette, halftone toggle, seed and extra class names
+ * @param props - Palette, seed and extra class names
  * @returns A canvas over a CSS gradient fallback
  */
-export default function ShaderBackground({ colors, dots = false, seed = 0, className = '' }: ShaderBackgroundProps) {
+export default function ShaderBackground({ colors, seed = 0, className = '' }: ShaderBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -177,13 +217,12 @@ export default function ShaderBackground({ colors, dots = false, seed = 0, class
       context.vertexAttribPointer(position, 2, context.FLOAT, false, 0, 0)
 
       uniforms = Object.fromEntries(
-        ['u_resolution', 'u_time', 'u_scale', 'u_pointer', 'u_colors', 'u_dots', 'u_seed'].map((name) => [
+        ['u_resolution', 'u_time', 'u_pointer', 'u_colors', 'u_seed'].map((name) => [
           name,
           context.getUniformLocation(linked, name)
         ])
       )
       context.uniform3fv(uniforms.u_colors, colors.flat())
-      context.uniform1f(uniforms.u_dots, dots ? 1 : 0)
       context.uniform1f(uniforms.u_seed, seed)
     }
 
@@ -235,7 +274,6 @@ export default function ShaderBackground({ colors, dots = false, seed = 0, class
       canvas.height = Math.max(1, Math.round(canvas.clientHeight * ratio))
       gl.viewport(0, 0, canvas.width, canvas.height)
       gl.uniform2f(uniforms.u_resolution, canvas.width, canvas.height)
-      gl.uniform1f(uniforms.u_scale, ratio)
     }
 
     const draw = () => {
@@ -325,7 +363,7 @@ export default function ShaderBackground({ colors, dots = false, seed = 0, class
       gl?.deleteBuffer(buffer)
       gl?.deleteProgram(program)
     }
-  }, [colors, dots, seed])
+  }, [colors, seed])
 
   const [base, mid, highlight] = colors.map(([r, g, b]) => `rgb(${r * 255} ${g * 255} ${b * 255})`)
 
@@ -333,7 +371,7 @@ export default function ShaderBackground({ colors, dots = false, seed = 0, class
     <div
       aria-hidden="true"
       className={`absolute inset-0 overflow-hidden ${className}`}
-      style={{ background: `radial-gradient(120% 90% at 70% 20%, ${highlight}, ${mid} 45%, ${base} 85%)` }}
+      style={{ background: `radial-gradient(90% 80% at 80% 15%, ${highlight}, ${mid} 40%, ${base} 85%)` }}
     >
       <canvas ref={canvasRef} className="block h-full w-full" />
     </div>

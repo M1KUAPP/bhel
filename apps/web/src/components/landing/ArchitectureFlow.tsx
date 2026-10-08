@@ -2,16 +2,23 @@
  * Architecture Flow Component
  *
  * The request path from the web app to the database, drawn as four nodes
- * with animated packets on the links between them. Horizontal on wide
- * screens, vertical on narrow ones.
+ * with animated packets on the links between them. The RMI server lists its
+ * four services, which light up in turn. Horizontal on wide screens,
+ * vertical on narrow ones.
  */
+import { Database, Monitor, Server, ShieldCheck } from 'lucide-react'
 import { Fragment } from 'react'
 
 const NODES = [
-  { name: 'Next.js web app', detail: 'React 19 · zustand · Tailwind CSS' },
-  { name: 'Spring Boot gateway', detail: 'Spring Security · JJWT' },
-  { name: 'Java RMI server', detail: 'Employee, Leave, Report and User services' },
-  { name: 'PostgreSQL', detail: 'Reached only by the RMI server' }
+  { icon: Monitor, name: 'Web app', detail: 'Next.js 16 · React 19' },
+  { icon: ShieldCheck, name: 'REST gateway', detail: 'Spring Boot 3.5 · :8080' },
+  {
+    icon: Server,
+    name: 'RMI server',
+    detail: 'Registry :1099',
+    services: ['EmployeeService', 'LeaveService', 'ReportService', 'UserService']
+  },
+  { icon: Database, name: 'PostgreSQL', detail: 'Reached only by the RMI server' }
 ] as const
 
 const LINKS = ['REST + JWT', 'Java RMI', 'HikariCP pool'] as const
@@ -26,9 +33,25 @@ export default function ArchitectureFlow() {
     <ol aria-label="Request path" className="flex flex-col items-stretch md:flex-row md:items-center">
       {NODES.map((node, index) => (
         <Fragment key={node.name}>
-          <li className="flex flex-col justify-center rounded-2xl border border-white/15 bg-[#071633]/85 px-5 py-4 md:min-h-32 md:w-48 md:shrink-0">
-            <p className="font-semibold text-white">{node.name}</p>
-            <p className="mt-1 text-sm text-white/75">{node.detail}</p>
+          <li className="rounded-3xl border border-white/12 bg-[#071633]/70 p-5 backdrop-blur-md md:w-52 md:shrink-0">
+            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-white/10 text-[#7fd0ff]">
+              <node.icon className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <p className="mt-4 font-semibold text-white">{node.name}</p>
+            <p className="mt-1 text-sm text-white/70">{node.detail}</p>
+            {'services' in node && (
+              <ul className="mt-4 space-y-1.5">
+                {node.services.map((service, serviceIndex) => (
+                  <li
+                    key={service}
+                    className="service-chip landing-loop rounded-lg border px-2.5 py-1 font-mono text-[11px] text-white/85"
+                    style={{ animationDelay: `${serviceIndex * 1.2}s` }}
+                  >
+                    {service}
+                  </li>
+                ))}
+              </ul>
+            )}
           </li>
           {index < LINKS.length && (
             <li className="flow-link">

@@ -1,320 +1,400 @@
 /**
  * Home Page Component
  *
- * The one-page landing for BHEL HRMS: a shader-backed hero, the features,
- * how a leave request moves, the distributed architecture and a call to
- * run it locally.
+ * The one-page landing for BHEL HRMS. Sunlight through leaves ("komorebi")
+ * frames the hero and the call to action; between them the page walks
+ * through leave balances, working days, roles, the eight steps and the
+ * distributed architecture.
  */
 import ArchitectureFlow from '@/components/landing/ArchitectureFlow'
+import BalanceMeters from '@/components/landing/BalanceMeters'
+import LandingMotion from '@/components/landing/LandingMotion'
 import LeaveCardDemo from '@/components/landing/LeaveCardDemo'
 import MotionToggle from '@/components/landing/MotionToggle'
+import PaperBackdrop from '@/components/landing/PaperBackdrop'
 import Reveal from '@/components/landing/Reveal'
+import RoleSidebar from '@/components/landing/RoleSidebar'
 import ShaderBackground, { type ShaderColor } from '@/components/landing/ShaderBackground'
-import {
-  ArrowRight,
-  ArrowUpRight,
-  CalendarRange,
-  FileText,
-  MessageSquareText,
-  ShieldCheck,
-  UserRound,
-  Users
-} from 'lucide-react'
-import Image from 'next/image'
+import SiteNav from '@/components/landing/SiteNav'
+import StackMarquee from '@/components/landing/StackMarquee'
+import StepsShowcase from '@/components/landing/StepsShowcase'
+import WorkingDays from '@/components/landing/WorkingDays'
+import { ArrowDown, ArrowRight, ArrowUpRight, KeyRound, Lock, ShieldCheck } from 'lucide-react'
+import localFont from 'next/font/local'
 import Link from 'next/link'
+import type { ReactNode } from 'react'
+
+const instrumentSerif = localFont({
+  src: [
+    { path: './fonts/instrument-serif-latin-400-normal.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/instrument-serif-latin-400-italic.woff2', weight: '400', style: 'italic' }
+  ],
+  variable: '--font-instrument-serif',
+  display: 'swap'
+})
 
 const REPOSITORY_URL = 'https://github.com/M1KUAPP/bhel'
 
 type Palette = readonly [ShaderColor, ShaderColor, ShaderColor, ShaderColor]
 
-/** Navy to the app's #0066cc accent, with a cyan glint. */
+/** Shade from the icon's #003E8A, light toward its #1A7BEA and #7FD0FF glow. */
 const HERO_PALETTE: Palette = [
-  [0.012, 0.043, 0.122],
-  [0.035, 0.165, 0.4],
-  [0.0, 0.4, 0.8],
-  [0.37, 0.77, 1.0]
-]
-
-const ARCHITECTURE_PALETTE: Palette = [
-  [0.02, 0.05, 0.11],
-  [0.04, 0.2, 0.45],
-  [0.12, 0.48, 0.88],
-  [0.5, 0.82, 1.0]
+  [0.004, 0.035, 0.11],
+  [0.0, 0.18, 0.46],
+  [0.1, 0.48, 0.92],
+  [0.55, 0.85, 1.0]
 ]
 
 const CALL_TO_ACTION_PALETTE: Palette = [
-  [0.016, 0.063, 0.165],
-  [0.063, 0.184, 0.478],
-  [0.227, 0.357, 0.863],
-  [0.286, 0.82, 1.0]
+  [0.008, 0.05, 0.15],
+  [0.02, 0.22, 0.52],
+  [0.16, 0.55, 0.95],
+  [0.62, 0.89, 1.0]
 ]
 
-const FEATURES = [
+const HERO_FACTS = ['3 roles', '5 leave types', '4 RMI services', 'Earned an A+'] as const
+
+const SECURITY = [
+  { icon: Lock, title: 'BCrypt, 12 rounds', body: 'Passwords are stored as BCrypt hashes, never in plain text.' },
+  {
+    icon: KeyRound,
+    title: 'A real JWT secret',
+    body: 'The gateway refuses to start without a JWT_SECRET of at least 32 bytes.'
+  },
   {
     icon: ShieldCheck,
-    title: 'Role-based access',
-    body: 'Employees, HR and admins each see only what their role allows, enforced by Spring Security on the gateway.'
-  },
-  {
-    icon: Users,
-    title: 'Employee records',
-    body: 'HR registers and edits employees, with search and department and status filters.'
-  },
-  {
-    icon: UserRound,
-    title: 'Profiles and families',
-    body: 'Employees keep their own contact details and family members current.'
-  },
-  {
-    icon: CalendarRange,
-    title: 'Leave rules',
-    body: 'Working days are counted on the form and again on the server. A request must fit the balance, stay within one year and not overlap other leave.'
-  },
-  {
-    icon: MessageSquareText,
-    title: 'Approvals',
-    body: 'HR approves or rejects with comments, and every rejection says why.'
-  },
-  {
-    icon: FileText,
-    title: 'Yearly reports',
-    body: 'Employee, department and organization leave reports as PDFs, previewed in the browser.'
+    title: 'Roles on the gateway',
+    body: 'Spring Security limits registration, the directory, approvals and reports to HR and admins.'
   }
 ] as const
 
-const STEPS = [
-  { title: 'Sign in', body: 'The gateway returns a JWT that carries the role: employee, HR or admin.' },
-  { title: 'Apply', body: 'Pick a leave type and dates. Weekends are skipped and the balance is checked.' },
-  { title: 'Review', body: 'HR approves or rejects the request with a comment.' },
-  { title: 'Report', body: 'Yearly PDFs per employee, department or the whole organization.' }
-] as const
-
-const ALLOWANCES = [
-  { type: 'Annual', days: 14 },
-  { type: 'Sick', days: 14 },
-  { type: 'Emergency', days: 3 },
-  { type: 'Maternity', days: 90 },
-  { type: 'Paternity', days: 7 }
+const HEADLINE = [
+  { word: 'Leave,', serif: false },
+  { word: 'applied', serif: false },
+  { word: 'and', serif: false },
+  { word: 'approved.', serif: true }
 ] as const
 
 /**
- * Landing page with animated shader sections.
+ * A section heading with an eyebrow, a title and optional copy.
+ *
+ * @param props - Eyebrow, title, copy and whether the section is dark
+ * @returns The heading block
+ */
+function SectionHeading({
+  eyebrow,
+  title,
+  children,
+  dark = false
+}: {
+  eyebrow: string
+  title: ReactNode
+  children?: ReactNode
+  dark?: boolean
+}) {
+  return (
+    <Reveal className="max-w-3xl">
+      <p
+        className={`inline-flex items-center gap-2 text-sm font-semibold ${dark ? 'text-[#7fd0ff]' : 'text-[#0b4fb3]'}`}
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-current" />
+        {eyebrow}
+      </p>
+      <h2
+        className={`mt-4 text-[clamp(2.25rem,4.6vw,3.9rem)] leading-[1.02] font-semibold tracking-[-0.035em] text-balance ${dark ? 'text-white' : 'text-gray-950'}`}
+      >
+        {title}
+      </h2>
+      {children && (
+        <p className={`mt-5 max-w-2xl text-lg leading-relaxed ${dark ? 'text-white/75' : 'text-gray-600'}`}>
+          {children}
+        </p>
+      )}
+    </Reveal>
+  )
+}
+
+/** An italic serif accent inside a heading. */
+function Accent({ children, dark = false }: { children: ReactNode; dark?: boolean }) {
+  return (
+    <span className={`font-serif font-normal tracking-[-0.01em] italic ${dark ? 'text-[#9fdcff]' : 'text-[#1a7bea]'}`}>
+      {children}
+    </span>
+  )
+}
+
+/**
+ * Landing page with komorebi shader sections.
  *
  * @returns The one-page landing
  */
 export default function Home() {
   return (
-    <div className="landing bg-white text-gray-900">
-      <header className="absolute inset-x-0 top-0 z-20">
-        <nav aria-label="Main" className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <Link href="/" className="flex items-center gap-2.5 font-semibold text-white">
-            <Image src="/icon.svg" alt="" width={32} height={32} unoptimized priority />
-            BHEL HRMS
-          </Link>
-          <div className="flex items-center gap-6 text-sm font-medium text-white/85">
-            <a href="#features" className="hidden hover:text-white sm:inline">
-              Features
-            </a>
-            <a href="#how-it-works" className="hidden hover:text-white sm:inline">
-              How it works
-            </a>
-            <a href="#architecture" className="hidden hover:text-white sm:inline">
-              Architecture
-            </a>
-            <Link
-              href="/login"
-              className="rounded-full bg-white px-4 py-2 text-gray-900 transition-colors hover:bg-white/90"
-            >
-              Sign in
-            </Link>
-          </div>
-        </nav>
-      </header>
+    <LandingMotion>
+      <div className={`landing bg-white text-gray-900 ${instrumentSerif.variable}`}>
+        <SiteNav />
 
-      <main>
-        <section className="relative isolate flex min-h-svh items-center overflow-hidden bg-[#030b1f] pt-24 pb-16">
-          <ShaderBackground colors={HERO_PALETTE} className="-z-20" />
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,rgb(3_11_31/0.85)_10%,rgb(3_11_31/0.4)_50%,transparent_75%)]"
-          />
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <div className="max-w-2xl">
-              <p className="landing-intro inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium tracking-wide text-white">
-                Next.js · Spring Boot · Java RMI · PostgreSQL
-              </p>
-              <h1
-                className="landing-intro mt-6 text-5xl font-semibold tracking-tight text-white sm:text-6xl md:text-7xl"
-                style={{ animationDelay: '120ms' }}
-              >
-                Leave, applied and approved.
-              </h1>
-              <p
-                className="landing-intro mt-6 max-w-xl text-lg leading-relaxed text-white/85 md:text-xl"
-                style={{ animationDelay: '240ms' }}
-              >
-                An HR management system where employees apply for leave and HR approves it, built on a Spring Boot
-                gateway in front of a Java RMI server.
-              </p>
-              <div className="landing-intro mt-10 flex flex-wrap gap-4" style={{ animationDelay: '360ms' }}>
-                <Link
-                  href="/login"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 font-medium text-gray-900 transition-transform hover:-translate-y-0.5"
-                >
-                  Sign in
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-                <Link
-                  href="/dashboard"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 font-medium text-white transition-colors hover:bg-white/10"
-                >
-                  Open dashboard
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="features" className="scroll-mt-8 px-6 py-24 md:py-32">
-          <div className="mx-auto max-w-6xl">
-            <Reveal className="max-w-2xl">
-              <p className="text-sm font-semibold tracking-wide text-accent uppercase">Features</p>
-              <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">Everything HR does with leave.</h2>
-              <p className="mt-4 text-lg text-gray-600">
-                From an employee&apos;s first request to the yearly report, in one place.
-              </p>
-            </Reveal>
-            <ul className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {FEATURES.map(({ icon: Icon, title, body }, index) => (
-                <li key={title}>
-                  <Reveal delay={(index % 3) * 90} className="h-full">
-                    <div className="card-hover h-full rounded-3xl border border-gray-200 bg-[#f5f5f7] p-7">
-                      <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white text-accent shadow-sm">
-                        <Icon className="h-5 w-5" aria-hidden="true" />
-                      </span>
-                      <h3 className="mt-5 text-lg font-semibold">{title}</h3>
-                      <p className="mt-2 leading-relaxed text-gray-600">{body}</p>
-                    </div>
-                  </Reveal>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-
-        <section id="how-it-works" className="scroll-mt-8 bg-[#f5f5f7] px-6 py-24 md:py-32">
-          <div className="mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-2">
-            <div>
-              <Reveal>
-                <p className="text-sm font-semibold tracking-wide text-accent uppercase">How it works</p>
-                <h2 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">
-                  From request to report in four steps.
-                </h2>
-              </Reveal>
-              <ol className="mt-10 space-y-6">
-                {STEPS.map((step, index) => (
-                  <li key={step.title}>
-                    <Reveal delay={index * 90} className="flex gap-4">
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gray-900 text-sm font-semibold text-white">
-                        {index + 1}
-                      </span>
-                      <div>
-                        <h3 className="font-semibold">{step.title}</h3>
-                        <p className="mt-1 text-gray-600">{step.body}</p>
-                      </div>
-                    </Reveal>
-                  </li>
-                ))}
-              </ol>
-            </div>
-            <Reveal delay={120}>
-              <LeaveCardDemo />
-              <dl className="mt-8 grid grid-cols-5 gap-2 text-center">
-                {ALLOWANCES.map(({ type, days }) => (
-                  <div key={type} className="flex flex-col-reverse rounded-2xl bg-white px-2 py-4">
-                    <dt className="mt-1 text-xs text-gray-600">{type}</dt>
-                    <dd className="text-2xl font-semibold text-gray-900">{days}</dd>
-                  </div>
-                ))}
-              </dl>
-              <p className="mt-3 text-center text-sm text-gray-600">Leave allowances, in days per year</p>
-            </Reveal>
-          </div>
-        </section>
-
-        <section
-          id="architecture"
-          className="relative isolate scroll-mt-8 overflow-hidden bg-[#050d1c] px-6 py-24 md:py-32"
-        >
-          <ShaderBackground colors={ARCHITECTURE_PALETTE} dots seed={7} className="-z-20" />
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgb(5_13_28/0.85)_0%,rgb(5_13_28/0.55)_45%,rgb(5_13_28/0.2)_100%)]"
-          />
-          <div className="mx-auto max-w-6xl">
-            <Reveal className="max-w-2xl">
-              <p className="text-sm font-semibold tracking-wide text-[#7fd0ff] uppercase">Architecture</p>
-              <h2 className="mt-3 text-4xl font-semibold tracking-tight text-white md:text-5xl">
-                Four services behind one gateway.
-              </h2>
-              <p className="mt-4 text-lg leading-relaxed text-white/85">
-                The gateway reaches the employee, leave, report and user services over Java RMI. Only the RMI server
-                opens database connections, through a HikariCP pool, and passwords are stored as BCrypt hashes.
-              </p>
-            </Reveal>
-            <Reveal delay={120} className="mt-14">
-              <ArchitectureFlow />
-            </Reveal>
-          </div>
-        </section>
-
-        <section className="px-6 py-24 md:py-32">
-          <Reveal className="relative isolate mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-[#04102a] px-8 py-16 md:px-16 md:py-20">
-            <ShaderBackground colors={CALL_TO_ACTION_PALETTE} seed={23} className="-z-20" />
+        <main>
+          <section className="relative isolate flex min-h-svh items-center overflow-hidden bg-[#020a1c] pt-28 pb-24">
+            <ShaderBackground colors={HERO_PALETTE} className="-z-20" />
             <div
               aria-hidden="true"
-              className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgb(4_16_42/0.85),rgb(4_16_42/0.35))]"
+              className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,rgb(34_46_80)_8%,rgb(120_136_172)_46%,white_74%)] mix-blend-multiply max-lg:bg-[linear-gradient(180deg,rgb(52_66_102),rgb(52_66_102)_58%,rgb(140_156_190))]"
             />
-            <h2 className="max-w-xl text-4xl font-semibold tracking-tight text-white md:text-5xl">
-              Run it on your machine.
-            </h2>
-            <p className="mt-4 max-w-xl text-lg text-white/85">
-              PostgreSQL in Docker, the RMI server, the gateway and the web app. The setup guide walks through each one.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <a
-                href={`${REPOSITORY_URL}#getting-started`}
-                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 font-medium text-gray-900 transition-transform hover:-translate-y-0.5"
-              >
-                Read the setup guide
-                <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-              </a>
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 font-medium text-white transition-colors hover:bg-white/10"
-              >
-                Sign in
-              </Link>
+            <div className="mx-auto grid w-full max-w-6xl items-center gap-14 px-6 lg:grid-cols-[1.25fr_0.75fr]">
+              <div>
+                <p className="landing-intro inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5 text-xs font-medium tracking-wide text-white/85 backdrop-blur-md">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#7fd0ff] shadow-[0_0_10px_#7fd0ff]" />
+                  Next.js · Spring Boot · Java RMI · PostgreSQL
+                </p>
+                <h1 className="mt-7 text-[clamp(3.1rem,8vw,7rem)] leading-[0.92] font-semibold tracking-[-0.045em] text-white">
+                  {HEADLINE.map(({ word, serif }, index) => (
+                    <HeadlineWord key={word} index={index} serif={serif} word={word} />
+                  ))}
+                </h1>
+                <p
+                  className="landing-intro mt-8 max-w-xl text-lg leading-relaxed text-white/80 md:text-xl"
+                  style={{ animationDelay: '520ms' }}
+                >
+                  An HR management system where employees apply for leave and HR approves it, built on a Spring Boot
+                  gateway in front of a Java RMI server.
+                </p>
+                <div className="landing-intro mt-10 flex flex-wrap gap-3" style={{ animationDelay: '640ms' }}>
+                  <Link
+                    href="/login"
+                    className="group inline-flex items-center gap-2 rounded-full bg-white py-3 pr-5 pl-6 font-medium text-[#04102a] shadow-[0_10px_40px_-10px_rgb(127_208_255/0.6)] transition-transform hover:-translate-y-0.5"
+                  >
+                    Sign in
+                    <ArrowRight
+                      className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                  <Link
+                    href="/dashboard"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/[0.04] px-6 py-3 font-medium text-white backdrop-blur-md transition-colors hover:bg-white/10"
+                  >
+                    Open dashboard
+                  </Link>
+                </div>
+                <ul
+                  className="landing-intro mt-12 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/60"
+                  style={{ animationDelay: '760ms' }}
+                >
+                  {HERO_FACTS.map((fact) => (
+                    <li key={fact} className="flex items-center gap-2">
+                      <span className="h-1 w-1 rounded-full bg-white/40" />
+                      {fact}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="landing-intro flex justify-center lg:justify-end" style={{ animationDelay: '420ms' }}>
+                <LeaveCardDemo />
+              </div>
             </div>
-          </Reveal>
-        </section>
-      </main>
-
-      <footer className="border-t border-gray-200 px-6 pt-10 pb-24 text-sm text-gray-600">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <p>A coursework case study, not affiliated with Bharat Heavy Electricals Limited.</p>
-          <p className="flex gap-5">
-            <a href={`${REPOSITORY_URL}/blob/main/LICENSE`} className="hover:text-gray-900">
-              MIT License
+            <a
+              href="#leave"
+              className="absolute bottom-16 left-1/2 hidden -translate-x-1/2 items-center gap-2 text-xs font-medium tracking-wide text-white/60 transition-colors hover:text-white md:inline-flex"
+            >
+              <ArrowDown className="landing-bob landing-loop h-4 w-4" aria-hidden="true" />
+              Scroll
             </a>
-            <a href={REPOSITORY_URL} className="hover:text-gray-900">
-              GitHub
-            </a>
-          </p>
-        </div>
-      </footer>
+          </section>
 
-      <MotionToggle />
-    </div>
+          <div className="relative z-10 -mt-10 rounded-t-[2.5rem] bg-white">
+            <StackMarquee />
+
+            <section id="leave" className="scroll-mt-20 px-6 pt-16 pb-24 md:pt-24 md:pb-32">
+              <div className="mx-auto max-w-6xl">
+                <div className="grid gap-14 lg:grid-cols-[0.85fr_1.15fr] lg:items-center lg:gap-12">
+                  <SectionHeading
+                    eyebrow="Leave balances"
+                    title={
+                      <>
+                        Five kinds of leave, <Accent>counted to the day.</Accent>
+                      </>
+                    }
+                  >
+                    Each type has a yearly allowance. Employees see what&apos;s left, what&apos;s used and what&apos;s
+                    still pending.
+                  </SectionHeading>
+                  <Reveal delay={120}>
+                    <BalanceMeters />
+                  </Reveal>
+                </div>
+
+                <div className="mt-28 grid gap-12 lg:mt-36">
+                  <SectionHeading
+                    eyebrow="Leave rules"
+                    title={
+                      <>
+                        Weekends <Accent>don&apos;t count.</Accent>
+                      </>
+                    }
+                  >
+                    The form counts working days as the dates change and blocks a request over the remaining balance.
+                    The RMI server checks both again, and also rejects requests that span two years or overlap other
+                    leave.
+                  </SectionHeading>
+                  <Reveal delay={120}>
+                    <WorkingDays />
+                  </Reveal>
+                </div>
+              </div>
+            </section>
+
+            <section className="bg-[#f5f5f7] px-6 py-24 md:py-32">
+              <div className="mx-auto max-w-6xl">
+                <SectionHeading
+                  eyebrow="Roles"
+                  title={
+                    <>
+                      One login, <Accent>three roles.</Accent>
+                    </>
+                  }
+                >
+                  The JWT carries the role, Spring Security enforces it on the gateway and the sidebar follows the same
+                  rules. Pick a role to see what it can open.
+                </SectionHeading>
+                <Reveal delay={120} className="mt-14">
+                  <RoleSidebar />
+                </Reveal>
+              </div>
+            </section>
+
+            <section id="how-it-works" className="scroll-mt-20 px-6 py-24 md:py-32">
+              <div className="mx-auto max-w-6xl">
+                <SectionHeading
+                  eyebrow="How it works"
+                  title={
+                    <>
+                      From sign-in to <Accent>the yearly report.</Accent>
+                    </>
+                  }
+                >
+                  Eight steps, shown on the real app.
+                </SectionHeading>
+                <div className="mt-8 lg:mt-0">
+                  <StepsShowcase />
+                </div>
+              </div>
+            </section>
+
+            <section
+              id="architecture"
+              className="relative isolate scroll-mt-20 overflow-hidden bg-[#030b1f] px-6 py-24 md:py-32"
+            >
+              <PaperBackdrop className="-z-20" />
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgb(3_11_31/0.85)_0%,rgb(3_11_31/0.3)_55%,rgb(3_11_31/0.75)_100%)]"
+              />
+              <div className="mx-auto max-w-6xl">
+                <SectionHeading
+                  dark
+                  eyebrow="Architecture"
+                  title={
+                    <>
+                      Four services <Accent dark>behind one gateway.</Accent>
+                    </>
+                  }
+                >
+                  The Next.js app calls a Spring Boot REST gateway, which authenticates each request with a JWT and
+                  reaches four services on a Java RMI server. Only the RMI server opens database connections.
+                </SectionHeading>
+                <Reveal delay={120} className="mt-16">
+                  <ArchitectureFlow />
+                </Reveal>
+                <ul className="mt-16 grid gap-4 md:grid-cols-3">
+                  {SECURITY.map(({ icon: Icon, title, body }, index) => (
+                    <li key={title}>
+                      <Reveal
+                        delay={index * 90}
+                        className="h-full rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur-md"
+                      >
+                        <Icon className="h-5 w-5 text-[#7fd0ff]" aria-hidden="true" />
+                        <h3 className="mt-4 font-semibold text-white">{title}</h3>
+                        <p className="mt-2 text-sm leading-relaxed text-white/70">{body}</p>
+                      </Reveal>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+
+            <section className="px-4 py-20 sm:px-6 md:py-28">
+              <Reveal className="relative isolate mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] bg-[#04102a] px-8 py-20 md:px-16 md:py-28">
+                <ShaderBackground colors={CALL_TO_ACTION_PALETTE} seed={3} className="-z-20" />
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 -z-10 bg-[linear-gradient(95deg,rgb(34_46_80)_10%,rgb(130_146_180)_55%,white_85%)] mix-blend-multiply max-md:bg-[linear-gradient(180deg,rgb(52_66_102),rgb(90_106_142))]"
+                />
+                <h2 className="max-w-2xl text-[clamp(2.5rem,5.5vw,4.5rem)] leading-[1] font-semibold tracking-[-0.04em] text-balance text-white">
+                  Run it on <Accent dark>your machine.</Accent>
+                </h2>
+                <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/80">
+                  PostgreSQL in Docker, the RMI server, the gateway and the web app. The setup guide walks through each
+                  one.
+                </p>
+                <div className="mt-10 flex flex-wrap gap-3">
+                  <a
+                    href={`${REPOSITORY_URL}#getting-started`}
+                    className="group inline-flex items-center gap-2 rounded-full bg-white py-3 pr-5 pl-6 font-medium text-[#04102a] transition-transform hover:-translate-y-0.5"
+                  >
+                    Read the setup guide
+                    <ArrowUpRight
+                      className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                      aria-hidden="true"
+                    />
+                  </a>
+                  <Link
+                    href="/login"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/[0.04] px-6 py-3 font-medium text-white backdrop-blur-md transition-colors hover:bg-white/10"
+                  >
+                    Sign in
+                  </Link>
+                </div>
+              </Reveal>
+            </section>
+          </div>
+        </main>
+
+        <footer className="px-6 pt-6 pb-24 text-sm text-gray-600">
+          <div className="mx-auto flex max-w-6xl flex-col gap-3 border-t border-gray-200 pt-8 md:flex-row md:items-center md:justify-between">
+            <p>Built as coursework, where it earned an A+. Not affiliated with Bharat Heavy Electricals Limited.</p>
+            <p className="flex gap-5">
+              <a href={`${REPOSITORY_URL}/blob/main/LICENSE`} className="hover:text-gray-900">
+                MIT License
+              </a>
+              <a href={REPOSITORY_URL} className="hover:text-gray-900">
+                GitHub
+              </a>
+            </p>
+          </div>
+        </footer>
+
+        <MotionToggle />
+      </div>
+    </LandingMotion>
+  )
+}
+
+/**
+ * One headline word, revealed with a staggered CSS animation so it shows without JavaScript.
+ *
+ * @param props - The word, its position and whether it's set in the serif
+ * @returns The animated word followed by a space
+ */
+function HeadlineWord({ word, index, serif }: { word: string; index: number; serif: boolean }) {
+  return (
+    <>
+      <span
+        className={`landing-word ${serif ? 'bg-gradient-to-br from-white via-[#cfeeff] to-[#7fd0ff] bg-clip-text pr-[0.06em] font-serif font-normal tracking-[-0.02em] text-transparent italic' : ''}`}
+        style={{ animationDelay: `${120 + index * 110}ms` }}
+      >
+        {word}
+      </span>{' '}
+    </>
   )
 }
