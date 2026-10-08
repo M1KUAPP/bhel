@@ -60,6 +60,8 @@ class ApiClient {
       async (error: AxiosError<ApiErrorResponse>) => {
         if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
           localStorage.removeItem(TOKEN_STORAGE_KEY)
+          // The API client lives outside React, so it can't use the router; a full load also resets the stores.
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
           window.location.href = '/login'
         }
         return Promise.reject(this.handleError(error))

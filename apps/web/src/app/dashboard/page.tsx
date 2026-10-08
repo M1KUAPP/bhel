@@ -33,7 +33,7 @@ import {
   Users
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 /**
  * Dashboard home page with statistics and quick actions.
@@ -46,12 +46,6 @@ export default function DashboardPage() {
   const { employees, fetchEmployees } = useEmployeeStore()
   const { leaveBalance, applications, fetchBalance, fetchHistory } = useLeaveStore()
   const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState({
-    totalEmployees: 0,
-    totalLeaveBalance: 0,
-    pendingLeaves: 0,
-    upcomingLeaves: 0
-  })
   const currentYear = new Date().getFullYear()
   useEffect(() => {
     const loadData = async () => {
@@ -74,7 +68,7 @@ export default function DashboardPage() {
     }
     loadData()
   }, [user, fetchEmployees, fetchBalance, fetchHistory, currentYear])
-  useEffect(() => {
+  const stats = useMemo(() => {
     const totalEmployees = employees.length
     const totalLeaveBalance = leaveBalance.reduce((sum, lb) => sum + lb.remainingDays, 0)
     const pendingLeaves = applications.filter((app) => app.status === 'pending').length
@@ -83,12 +77,12 @@ export default function DashboardPage() {
       const startDate = new Date(app.startDate)
       return app.status === 'approved' && startDate > today
     }).length
-    setStats({
+    return {
       totalEmployees,
       totalLeaveBalance,
       pendingLeaves,
       upcomingLeaves
-    })
+    }
   }, [employees, leaveBalance, applications])
   const getGreeting = () => {
     const hour = new Date().getHours()

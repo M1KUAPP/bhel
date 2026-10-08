@@ -144,9 +144,11 @@ export default function ReportsPage() {
   }, [reportType, selectedEmployeeId, selectedDepartment, selectedYear])
   useEffect(() => {
     if (hasValidSelection()) {
+      // Fetching the preview is the effect; it flags itself as in flight before awaiting the request.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       handlePreviewReport()
     }
-  }, [reportType, selectedEmployeeId, selectedDepartment, selectedYear])
+  }, [hasValidSelection, handlePreviewReport])
   const isActionDisabled = () => {
     if (isGenerating || isPreviewing) return true
     if (!selectedYear) return true

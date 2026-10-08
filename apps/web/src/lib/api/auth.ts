@@ -54,6 +54,8 @@ export const authApi = {
   logout: () => {
     localStorage.removeItem(TOKEN_STORAGE_KEY)
     deleteCookie('auth_token')
+    // A full page load clears the in-memory stores along with the token.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.href = '/login'
   },
 
