@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "bhel",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "users",
+      "type": "external",
+      "label": "Staff",
+      "sublabel": "employee · HR · admin",
+      "pos": [40, 200],
+      "size": [150, 68]
+    },
+    {
+      "id": "web",
+      "type": "frontend",
+      "label": "Next.js web app",
+      "sublabel": "apps/web · :3000",
+      "pos": [290, 200],
+      "size": [180, 68]
+    },
+    {
+      "id": "gateway",
+      "type": "backend",
+      "label": "REST gateway",
+      "sublabel": "Spring Boot · :8080",
+      "pos": [620, 200],
+      "size": [190, 68]
+    },
+    {
+      "id": "security",
+      "type": "security",
+      "label": "Spring Security",
+      "sublabel": "JWT filter · role rules",
+      "pos": [620, 40],
+      "size": [190, 68]
+    },
+    {
+      "id": "rmi",
+      "type": "backend",
+      "label": "RMI server",
+      "sublabel": "4 remote services · :1099",
+      "pos": [950, 200],
+      "size": [200, 68]
+    },
+    {
+      "id": "pdf",
+      "type": "backend",
+      "label": "Report builder",
+      "sublabel": "iText 7 PDF",
+      "pos": [950, 370],
+      "size": [200, 68]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "employees · leave · users",
+      "pos": [1290, 200],
+      "size": [190, 68]
+    },
+    {
+      "id": "init",
+      "type": "backend",
+      "label": "DatabaseInitializer",
+      "sublabel": "drop, create, seed",
+      "pos": [1290, 370],
+      "size": [190, 68]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "apps/api · one Maven jar",
+      "wraps": ["gateway", "security", "rmi", "pdf", "init"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "users-web",
+      "from": "users",
+      "to": "web",
+      "label": "browser",
+      "variant": "emphasis"
+    },
+    {
+      "id": "web-gateway",
+      "from": "web",
+      "to": "gateway",
+      "label": "REST + Bearer JWT",
+      "variant": "emphasis"
+    },
+    {
+      "id": "gateway-security",
+      "from": "gateway",
+      "to": "security",
+      "label": "verify token, role",
+      "variant": "security",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "gateway-rmi",
+      "from": "gateway",
+      "to": "rmi",
+      "label": "Java RMI lookup",
+      "variant": "emphasis"
+    },
+    {
+      "id": "rmi-db",
+      "from": "rmi",
+      "to": "db",
+      "label": "JDBC · HikariCP",
+      "variant": "emphasis"
+    },
+    {
+      "id": "rmi-pdf",
+      "from": "rmi",
+      "to": "pdf",
+      "label": "yearly reports",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "init-db",
+      "from": "init",
+      "to": "db",
+      "label": "schema + seed",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom"
+    }
+  ]
+}
