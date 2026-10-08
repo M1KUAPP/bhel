@@ -1,0 +1,23 @@
+{
+  "private": true,
+  "packageManager": "bun@1.4.2",
+  "scripts": {
+    "build": "bun run --cwd apps/web build && bun run build:api",
+    "build:api": "if command -v mvn >/dev/null 2>&1; then mvn -q -B -f apps/api/pom.xml package; else echo 'mvn not found on PATH; skipping the API build'; fi",
+    "check": "bun run lint && bun run --cwd apps/web lint --max-warnings 0 && bun run typecheck && bun run build",
+    "lint": "prettier --check .",
+    "lint:fix": "prettier --write .",
+    "prepare": "husky",
+    "typecheck": "bun run --cwd apps/web typecheck"
+  },
+  "lint-staged": {
+    "*": "prettier --write --ignore-unknown"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.9"
+  }
+}

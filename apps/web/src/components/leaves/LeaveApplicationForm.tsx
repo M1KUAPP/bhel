@@ -164,7 +164,6 @@ export default function LeaveApplicationForm({ leaveBalances, onSubmit, onCancel
     }
   }
 
-
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6" noValidate>
       <div className="space-y-1.5">
