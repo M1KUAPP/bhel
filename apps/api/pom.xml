@@ -92,6 +92,12 @@
       <artifactId>io</artifactId>
       <version>7.2.5</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -99,6 +105,14 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <environmentVariables>
+            <JWT_SECRET>test-only-secret-that-is-at-least-32-bytes-long</JWT_SECRET>
+          </environmentVariables>
+        </configuration>
       </plugin>
     </plugins>
   </build>
