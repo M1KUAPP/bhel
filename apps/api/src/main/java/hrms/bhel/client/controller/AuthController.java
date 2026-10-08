@@ -1,5 +1,6 @@
 package hrms.bhel.client.controller;
 
+import hrms.bhel.client.dto.ErrorResponse;
 import hrms.bhel.client.dto.LoginRequest;
 import hrms.bhel.client.dto.LoginResponse;
 import hrms.bhel.client.security.JwtUtil;
@@ -38,12 +39,12 @@ public class AuthController {
       User user = userService.authenticate(request.getUsername(), request.getPassword());
       if (user == null) {
         logger.warn("Authentication failed for username: {}", request.getUsername());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+        return error(HttpStatus.UNAUTHORIZED, "Invalid username or password");
       }
       Employee employee = user.getEmployee();
       if (employee == null) {
         logger.error("User {} has no associated employee record", request.getUsername());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("User account configuration error");
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "User account configuration error");
       }
       String role = user.getRole().toUpperCase();
       String token = jwtUtil.generateToken(request.getUsername(), role, employee.getId());
@@ -66,12 +67,14 @@ public class AuthController {
         e.getMessage(),
         e
       );
-      return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(
-        "Authentication service temporarily unavailable"
-      );
+      return error(HttpStatus.SERVICE_UNAVAILABLE, "Authentication service temporarily unavailable");
     } catch (Exception e) {
       logger.error("Unexpected error during authentication for user {}: {}", request.getUsername(), e.getMessage(), e);
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during authentication");
+      return error(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred during authentication");
     }
+  }
+
+  private ResponseEntity<ErrorResponse> error(HttpStatus status, String message) {
+    return ResponseEntity.status(status).body(new ErrorResponse(status.value(), status.getReasonPhrase(), message));
   }
 }
