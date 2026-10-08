@@ -20,6 +20,7 @@ import {
   UserRound,
   Users
 } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 
 const REPOSITORY_URL = 'https://github.com/M1KUAPP/bhel'
@@ -107,7 +108,7 @@ export default function Home() {
       <header className="absolute inset-x-0 top-0 z-20">
         <nav aria-label="Main" className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
           <Link href="/" className="flex items-center gap-2.5 font-semibold text-white">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent text-sm font-bold">B</span>
+            <Image src="/icon.svg" alt="" width={32} height={32} unoptimized priority />
             BHEL HRMS
           </Link>
           <div className="flex items-center gap-6 text-sm font-medium text-white/85">
