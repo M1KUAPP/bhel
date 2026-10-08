@@ -39,3 +39,201 @@ body {
   transform: scale(1.01);
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
 }
+
+/* Landing page motion. Loops pause with <html data-motion="paused"> and stop under reduced motion. */
+
+@keyframes landing-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@keyframes flow-across {
+  from {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  15%,
+  85% {
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes flow-down {
+  from {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  15%,
+  85% {
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes status-out {
+  0%,
+  40%,
+  100% {
+    opacity: 1;
+  }
+  50%,
+  92% {
+    opacity: 0;
+  }
+}
+
+@keyframes status-in {
+  0%,
+  40%,
+  100% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  50%,
+  92% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes balance-spend {
+  0%,
+  40%,
+  100% {
+    transform: scaleX(1);
+  }
+  50%,
+  92% {
+    transform: scaleX(0.786);
+  }
+}
+
+.landing-intro {
+  animation: landing-fade-up 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.flow-link {
+  position: relative;
+  align-self: center;
+  width: 1px;
+  height: 4.5rem;
+}
+
+.flow-link::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent, rgb(255 255 255 / 0.4), transparent);
+}
+
+.flow-packet {
+  position: absolute;
+  inset: 0;
+  animation: flow-down 2.4s linear infinite;
+}
+
+.flow-packet::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  background: #7fd0ff;
+  box-shadow: 0 0 14px 3px rgb(127 208 255 / 0.7);
+}
+
+.flow-label {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  border-radius: 9999px;
+  background: rgb(7 22 51 / 0.9);
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgb(255 255 255 / 0.85);
+}
+
+@media (min-width: 768px) {
+  .flow-link {
+    flex: 1;
+    width: auto;
+    min-width: 7rem;
+    height: 1px;
+  }
+
+  .flow-link::before {
+    background: linear-gradient(to right, transparent, rgb(255 255 255 / 0.4), transparent);
+  }
+
+  .flow-packet {
+    animation-name: flow-across;
+  }
+
+  .flow-label {
+    top: -1.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+.status-pending {
+  animation: status-out 6s ease-in-out infinite;
+}
+
+.status-approved,
+.status-comment {
+  animation: status-in 6s ease-in-out infinite;
+}
+
+.balance-bar {
+  transform-origin: left;
+  animation: balance-spend 6s ease-in-out infinite;
+}
+
+[data-motion='paused'] .landing-loop {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    transition:
+      opacity 0.7s ease,
+      transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .reveal[data-reveal='hidden'] {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-intro,
+  .landing-loop {
+    animation: none;
+  }
+
+  .flow-packet,
+  .status-pending,
+  .motion-toggle {
+    display: none;
+  }
+
+  .balance-bar {
+    transform: scaleX(0.786);
+  }
+}
