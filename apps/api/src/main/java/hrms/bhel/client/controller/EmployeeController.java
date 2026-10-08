@@ -3,6 +3,7 @@ package hrms.bhel.client.controller;
 import hrms.bhel.client.dto.*;
 import hrms.bhel.client.exception.RmiExceptionUtils;
 import hrms.bhel.client.exception.ServiceCommunicationException;
+import hrms.bhel.client.security.EmployeeAccess;
 import hrms.bhel.common.dto.*;
 import hrms.bhel.common.service.EmployeeService;
 import jakarta.validation.Valid;
@@ -29,6 +30,9 @@ public class EmployeeController {
 
   @Autowired
   private EmployeeService employeeService;
+
+  @Autowired
+  private EmployeeAccess employeeAccess;
 
   @PostMapping
   public ResponseEntity<EmployeeDTO> registerEmployee(@Valid @RequestBody EmployeeRegistrationDTO dto) {
@@ -61,6 +65,7 @@ public class EmployeeController {
 
   @GetMapping("/{id}")
   public ResponseEntity<EmployeeDTO> getEmployee(@PathVariable Long id) {
+    employeeAccess.requireSelfOrStaff(id);
     try {
       logger.info("Fetching employee with ID: {}", id);
       Employee employee = employeeService.getEmployeeById(id);
@@ -78,6 +83,7 @@ public class EmployeeController {
 
   @PutMapping("/{id}/profile")
   public ResponseEntity<Void> updateProfile(@PathVariable Long id, @Valid @RequestBody ProfileUpdateDTO dto) {
+    employeeAccess.requireSelfOrStaff(id);
     try {
       logger.info("Updating profile for employee ID: {}", id);
       ProfileUpdate update = convertToProfileUpdate(dto);
@@ -98,6 +104,7 @@ public class EmployeeController {
 
   @GetMapping("/{id}/family")
   public ResponseEntity<List<FamilyMemberDTO>> getFamilyDetails(@PathVariable Long id) {
+    employeeAccess.requireSelfOrStaff(id);
     try {
       logger.info("Fetching family details for employee ID: {}", id);
       List<FamilyMember> members = employeeService.getFamilyDetails(id);
@@ -115,6 +122,7 @@ public class EmployeeController {
     @PathVariable Long id,
     @Valid @RequestBody List<FamilyMemberDTO> dtos
   ) {
+    employeeAccess.requireSelfOrStaff(id);
     try {
       logger.info("Updating family details for employee ID: {}", id);
       List<FamilyMember> members = dtos.stream().map(this::convertToFamilyMember).collect(Collectors.toList());

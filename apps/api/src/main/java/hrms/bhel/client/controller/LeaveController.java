@@ -2,6 +2,7 @@ package hrms.bhel.client.controller;
 
 import hrms.bhel.client.dto.*;
 import hrms.bhel.client.exception.ServiceCommunicationException;
+import hrms.bhel.client.security.EmployeeAccess;
 import hrms.bhel.client.security.JwtUtil;
 import hrms.bhel.common.dto.*;
 import hrms.bhel.common.service.LeaveService;
@@ -34,11 +35,15 @@ public class LeaveController {
   @Autowired
   private JwtUtil jwtUtil;
 
+  @Autowired
+  private EmployeeAccess employeeAccess;
+
   @GetMapping("/balance/{employeeId}")
   public ResponseEntity<List<LeaveBalanceDTO>> getLeaveBalance(
     @PathVariable Long employeeId,
     @RequestParam(required = false) Integer year
   ) {
+    employeeAccess.requireSelfOrStaff(employeeId);
     try {
       int queryYear = (year != null) ? year : Year.now().getValue();
       logger.info("Fetching leave balance for employee ID: {}, year: {}", employeeId, queryYear);
@@ -54,6 +59,7 @@ public class LeaveController {
 
   @PostMapping
   public ResponseEntity<LeaveApplicationDTO> applyLeave(@Valid @RequestBody LeaveRequestDTO dto) {
+    employeeAccess.requireSelfOrStaff(dto.getEmployeeId());
     try {
       logger.info(
         "Applying leave for employee ID: {}, type: {}, from {} to {}",
@@ -117,6 +123,7 @@ public class LeaveController {
           "Leave application not found with ID: " + applicationId
         );
       }
+      employeeAccess.requireSelfOrStaff(application.getEmployeeId());
       logger.info("Leave application found with status: {}", application.getStatus());
       return ResponseEntity.ok(convertToApplicationDTO(application));
     } catch (RemoteException e) {
@@ -130,6 +137,7 @@ public class LeaveController {
     @PathVariable Long employeeId,
     @RequestParam(required = false) Integer year
   ) {
+    employeeAccess.requireSelfOrStaff(employeeId);
     try {
       int queryYear = (year != null) ? year : Year.now().getValue();
       logger.info("Fetching leave history for employee ID: {}, year: {}", employeeId, queryYear);
@@ -216,6 +224,13 @@ public class LeaveController {
   @PostMapping("/{applicationId}/cancel")
   public ResponseEntity<Void> cancelLeave(@PathVariable Long applicationId) {
     try {
+      LeaveApplication application = leaveService.getLeaveApplicationStatus(applicationId);
+      if (application == null) {
+        throw new hrms.bhel.client.exception.ResourceNotFoundException(
+          "Leave application not found with ID: " + applicationId
+        );
+      }
+      employeeAccess.requireSelfOrStaff(application.getEmployeeId());
       logger.info("Cancelling leave application ID: {}", applicationId);
       boolean success = leaveService.cancelLeave(applicationId);
       if (success) {
