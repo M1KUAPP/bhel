@@ -1,0 +1,9 @@
+{
+  "name": "bhel",
+  "description": "An HR management system where employees apply for leave and HR approves it, built on a Spring Boot gateway in front of a Java RMI server.",
+  "logo": { "letter": "B" },
+  "screenshot": { "light": "steps/2-dashboard.png" },
+  "colors": { "paper": "#FFFFFF", "ink": "#1D1D1F", "accent": "#0066CC" },
+  "font": "system-ui",
+  "out": "docs/readme"
+}
