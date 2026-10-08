@@ -1,29 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!--
-  HRMS Logging Configuration (Logback)
-
-  Appenders:
-    - CONSOLE: Outputs logs to standard output for development/debugging
-    - FILE: Rolling file appender that creates daily log files in logs/ directory
-
-  Log Levels:
-    - Root: INFO (default for all loggers)
-    - hrms.server: DEBUG (detailed server-side logging)
-    - com.zaxxer.hikari: INFO (HikariCP connection pool)
-    - java.sql: DEBUG (SQL query logging for debugging)
-
-  Log files are retained for 30 days with daily rotation.
--->
 <configuration>
-
-    <!-- Console Appender - outputs to stdout with timestamp, thread, level, logger, and message -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} | %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- File Appender - rolling daily logs with 30-day retention -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/hrms.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -35,14 +17,8 @@
         </encoder>
     </appender>
 
-    <!-- Root Logger - INFO level, outputs to both console and file -->
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
     </root>
-
-    <!-- Application Loggers -->
-    <logger name="hrms.server" level="DEBUG" />       <!-- RMI server operations -->
-    <logger name="com.zaxxer.hikari" level="INFO" />  <!-- Connection pool events -->
-    <logger name="java.sql" level="DEBUG" />          <!-- SQL queries for debugging -->
 </configuration>

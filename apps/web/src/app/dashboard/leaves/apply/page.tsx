@@ -20,7 +20,7 @@ import { useLeaveStore } from '@/lib/store/useLeaveStore'
 import { showErrorToast } from '@/lib/utils/toast'
 import { ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 /**
  * Maps display leave type names to backend format.
@@ -47,7 +47,8 @@ function mapLeaveTypeToBackend(displayName: string): string {
 export default function ApplyLeavePage() {
   const router = useRouter()
   const { user } = useAuthStore()
-  const { leaveBalance, loading, fetchBalance, applyLeave, clearError } = useLeaveStore()
+  const { leaveBalance, fetchBalance, applyLeave, clearError } = useLeaveStore()
+  const [balanceLoaded, setBalanceLoaded] = useState(false)
   useEffect(() => {
     if (!user?.employeeId) {
       showErrorToast('Session expired. Please log in again.')
@@ -58,9 +59,16 @@ export default function ApplyLeavePage() {
     clearError()
     if (user?.employeeId) {
       const currentYear = new Date().getFullYear()
-      fetchBalance(user.employeeId, currentYear)
+      fetchBalance(user.employeeId, currentYear).finally(() => setBalanceLoaded(true))
     }
   }, [user?.employeeId, fetchBalance, clearError])
+  const noBalance = balanceLoaded && leaveBalance.length === 0
+  useEffect(() => {
+    if (noBalance) {
+      showErrorToast('No leave balance found. Please contact HR.')
+      router.push('/dashboard/leaves')
+    }
+  }, [noBalance, router])
   const handleSubmit = async (data: { leaveType: string; startDate: string; endDate: string; reason: string }) => {
     if (!user?.employeeId) {
       showErrorToast('Session expired. Please log in again.')
@@ -79,17 +87,15 @@ export default function ApplyLeavePage() {
   const handleCancel = () => {
     router.push('/dashboard/leaves')
   }
-  if (loading && leaveBalance.length === 0) {
+  if (noBalance) {
+    return null
+  }
+  if (leaveBalance.length === 0) {
     return (
       <div className="flex justify-center items-center py-24">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
       </div>
     )
-  }
-  if (leaveBalance.length === 0) {
-    showErrorToast('No leave balance found. Please contact HR.')
-    router.push('/dashboard/leaves')
-    return null
   }
   return (
     <div className="max-w-3xl mx-auto space-y-8">
