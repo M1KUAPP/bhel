@@ -2,6 +2,7 @@ package hrms.bhel.client.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import javax.crypto.SecretKey;
 import org.slf4j.Logger;
@@ -18,19 +19,26 @@ public class JwtUtil {
 
   private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
   private static final long DEFAULT_EXPIRATION = 86400000L;
-  private static final String DEFAULT_SECRET = "your-jwt-secret-need-at-least-32-characters";
+  private static final int MIN_SECRET_BYTES = 32;
+  private static final String EXAMPLE_SECRET = "your-jwt-secret-need-at-least-32-characters";
   private final String secret;
   private final long expiration;
 
   public JwtUtil() {
     String secretEnv = System.getenv("JWT_SECRET");
-    this.secret = secretEnv != null ? secretEnv : DEFAULT_SECRET;
+    if (secretEnv == null || secretEnv.getBytes(StandardCharsets.UTF_8).length < MIN_SECRET_BYTES) {
+      throw new IllegalStateException("JWT_SECRET must be set to at least " + MIN_SECRET_BYTES + " bytes");
+    }
+    if (secretEnv.equals(EXAMPLE_SECRET)) {
+      throw new IllegalStateException("JWT_SECRET still holds the .env.example placeholder; generate one with: openssl rand -hex 32");
+    }
+    this.secret = secretEnv;
     String expirationEnv = System.getenv("JWT_EXPIRATION");
     this.expiration = expirationEnv != null ? Long.parseLong(expirationEnv) : DEFAULT_EXPIRATION;
   }
 
   private SecretKey getSigningKey() {
-    return Keys.hmacShaKeyFor(secret.getBytes());
+    return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
   }
 
   public String generateToken(String username, String role, Long employeeId) {
