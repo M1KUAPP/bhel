@@ -40,7 +40,6 @@ type LoginFormData = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const router = useRouter()
   const login = useAuthStore((state) => state.login)
-  const [error, setError] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
   const {
     register,
@@ -52,11 +51,10 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       setIsLoading(true)
-      setError('')
       await login(data)
       router.push('/dashboard')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid credentials. Please try again.')
+    } catch {
+      // useAuthStore.login already shows the error toast.
     } finally {
       setIsLoading(false)
     }
