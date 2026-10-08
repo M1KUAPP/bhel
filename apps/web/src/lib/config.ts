@@ -24,7 +24,7 @@ export const COMPANY_NAME = 'BHEL'
 export const APP_NAME = `${COMPANY_NAME} HRMS`
 
 /** Company email domain for validation */
-export const EMAIL_DOMAIN = 'bhel.com'
+export const EMAIL_DOMAIN = 'example.com'
 
 /** LocalStorage key for JWT access token */
 export const TOKEN_STORAGE_KEY = 'accessToken'

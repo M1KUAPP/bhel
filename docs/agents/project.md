@@ -33,6 +33,8 @@ Run these from the repository root unless noted. The Java processes read only en
 
 `DatabaseInitializer` drops and recreates every table in the database `DATABASE_URL` points at, then seeds three local logins: `admin`/`admin`, `hr`/`hr` and `employee`/`employee`.
 
+The gateway refuses to start unless `JWT_SECRET` is at least 32 bytes and isn't the `.env.example` placeholder (`openssl rand -hex 32` makes one).
+
 ## Conventions
 
 - **Package managers:** bun for the root tooling and `apps/web/`, each with its own `bun.lock`. Maven for `apps/api/`.

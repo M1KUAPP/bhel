@@ -46,7 +46,7 @@ public class SecurityConfig {
       )
       .authorizeHttpRequests(auth ->
         auth
-          .requestMatchers("/api/auth/**", "/api/test/**")
+          .requestMatchers("/api/auth/**")
           .permitAll()
           .requestMatchers(HttpMethod.GET, "/api/employees/{id}")
           .authenticated()
@@ -60,9 +60,9 @@ public class SecurityConfig {
           .hasAnyRole("HR", "ADMIN")
           .requestMatchers("/api/leaves/balance/**")
           .authenticated()
-          .requestMatchers("/api/leaves/apply")
-          .hasAnyRole("EMPLOYEE", "HR", "ADMIN")
-          .requestMatchers("/api/leaves/approve", "/api/leaves/reject")
+          .requestMatchers(HttpMethod.GET, "/api/leaves/pending")
+          .hasAnyRole("HR", "ADMIN")
+          .requestMatchers(HttpMethod.POST, "/api/leaves/*/approve", "/api/leaves/*/reject")
           .hasAnyRole("HR", "ADMIN")
           .requestMatchers("/api/leaves/**")
           .authenticated()
