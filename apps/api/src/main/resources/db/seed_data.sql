@@ -31,7 +31,7 @@ VALUES
     'Admin',
     'Test',
     'IC-00-0001',
-    'admin.test@bhel.com',
+    'admin.test@example.com',
     '+60000000001',
     'Admin',
     'Admin Manager',
@@ -42,7 +42,7 @@ VALUES
     'HR',
     'Test',
     'IC-00-0002',
-    'hr.test@bhel.com',
+    'hr.test@example.com',
     '+60000000002',
     'Human Resources',
     'HR Manager',
@@ -53,7 +53,7 @@ VALUES
     'Employee',
     'Test',
     'IC-00-0003',
-    'employee.test@bhel.com',
+    'employee.test@example.com',
     '+60000000003',
     'Testing',
     'Tester',
@@ -75,7 +75,7 @@ SELECT
 FROM
   employees e
 WHERE
-  e.email = 'admin.test@bhel.com';
+  e.email = 'admin.test@example.com';
 
 INSERT INTO
   users (employee_id, username, password_hash, role)
@@ -87,7 +87,7 @@ SELECT
 FROM
   employees e
 WHERE
-  e.email = 'hr.test@bhel.com';
+  e.email = 'hr.test@example.com';
 
 INSERT INTO
   users (employee_id, username, password_hash, role)
@@ -99,7 +99,7 @@ SELECT
 FROM
   employees e
 WHERE
-  e.email = 'employee.test@bhel.com';
+  e.email = 'employee.test@example.com';
 
 -- ============================================================================
 -- INITIAL LEAVE BALANCES
@@ -129,7 +129,7 @@ FROM
   CROSS JOIN leave_types lt
 WHERE
   e.email IN (
-    'admin.test@bhel.com',
-    'hr.test@bhel.com',
-    'employee.test@bhel.com'
+    'admin.test@example.com',
+    'hr.test@example.com',
+    'employee.test@example.com'
   );
