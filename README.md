@@ -93,7 +93,7 @@ Built as coursework, where it earned an A+.
     <td width="50%" valign="top" align="left">
       <img src="/docs/readme/screenshots/landing.png" alt="bhel landing page" width="100%">
       <br />
-      <strong>Landing Page</strong> · An animated shader hero, the features, the leave flow and the architecture, with links to sign in.
+      <strong>Landing Page</strong> · A komorebi shader hero, then leave balances, working days, roles, the eight steps and the architecture.
     </td>
     <td width="50%" valign="top" align="left">
       <img src="/docs/readme/screenshots/leave-balance.png" alt="Leave balances" width="100%">
