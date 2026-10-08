@@ -43,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           logger.debug("JWT token validated for username: {}, role: {}", username, role);
           SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role);
           UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-            username,
+            new JwtPrincipal(username, jwtUtil.getEmployeeIdFromToken(token)),
             null,
             Collections.singletonList(authority)
           );
